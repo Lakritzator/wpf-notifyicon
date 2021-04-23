@@ -139,19 +139,14 @@ namespace Hardcodet.Wpf.TaskbarNotification
         /// </summary>
         public static BalloonFlags GetBalloonFlag(this BalloonIcon icon)
         {
-            switch (icon)
+            return icon switch
             {
-                case BalloonIcon.None:
-                    return BalloonFlags.None;
-                case BalloonIcon.Info:
-                    return BalloonFlags.Info;
-                case BalloonIcon.Warning:
-                    return BalloonFlags.Warning;
-                case BalloonIcon.Error:
-                    return BalloonFlags.Error;
-                default:
-                    throw new ArgumentOutOfRangeException("icon");
-            }
+                BalloonIcon.None => BalloonFlags.None,
+                BalloonIcon.Info => BalloonFlags.Info,
+                BalloonIcon.Warning => BalloonFlags.Warning,
+                BalloonIcon.Error => BalloonFlags.Error,
+                _ => throw new ArgumentOutOfRangeException(nameof(icon))
+            };
         }
 
         #endregion
@@ -169,7 +164,7 @@ namespace Hardcodet.Wpf.TaskbarNotification
         {
             if (imageSource == null) return null;
 
-            Uri uri = new Uri(imageSource.ToString());
+            var uri = new Uri(imageSource.ToString());
             StreamResourceInfo streamInfo = Application.GetResourceStream(uri);
 
             if (streamInfo == null)
@@ -179,7 +174,16 @@ namespace Hardcodet.Wpf.TaskbarNotification
                 throw new ArgumentException(msg);
             }
 
-            return new Icon(streamInfo.Stream);
+            try
+            {
+                return new Icon(streamInfo.Stream);
+            }
+            finally
+            {
+                streamInfo.Stream.Close();
+                streamInfo.Stream.Dispose();
+            }
+            
         }
 
         #endregion
@@ -222,26 +226,19 @@ namespace Hardcodet.Wpf.TaskbarNotification
         /// </summary>
         public static bool IsMatch(this MouseEvent me, PopupActivationMode activationMode)
         {
-            switch (activationMode)
+            return activationMode switch
             {
-                case PopupActivationMode.LeftClick:
-                    return me == MouseEvent.IconLeftMouseUp;
-                case PopupActivationMode.RightClick:
-                    return me == MouseEvent.IconRightMouseUp;
-                case PopupActivationMode.LeftOrRightClick:
-                    return me.Is(MouseEvent.IconLeftMouseUp, MouseEvent.IconRightMouseUp);
-                case PopupActivationMode.LeftOrDoubleClick:
-                    return me.Is(MouseEvent.IconLeftMouseUp, MouseEvent.IconDoubleClick);
-                case PopupActivationMode.DoubleClick:
-                    return me.Is(MouseEvent.IconDoubleClick);
-                case PopupActivationMode.MiddleClick:
-                    return me == MouseEvent.IconMiddleMouseUp;
-                case PopupActivationMode.All:
+                PopupActivationMode.LeftClick => me == MouseEvent.IconLeftMouseUp,
+                PopupActivationMode.RightClick => me == MouseEvent.IconRightMouseUp,
+                PopupActivationMode.LeftOrRightClick => me.Is(MouseEvent.IconLeftMouseUp, MouseEvent.IconRightMouseUp),
+                PopupActivationMode.LeftOrDoubleClick => me.Is(MouseEvent.IconLeftMouseUp, MouseEvent.IconDoubleClick),
+                PopupActivationMode.DoubleClick => me.Is(MouseEvent.IconDoubleClick),
+                PopupActivationMode.MiddleClick => me == MouseEvent.IconMiddleMouseUp,
+                PopupActivationMode.All =>
                     //return true for everything except mouse movements
-                    return me != MouseEvent.MouseMove;
-                default:
-                    throw new ArgumentOutOfRangeException("activationMode");
-            }
+                    me != MouseEvent.MouseMove,
+                _ => throw new ArgumentOutOfRangeException(nameof(activationMode))
+            };
         }
 
         #endregion
@@ -258,13 +255,18 @@ namespace Hardcodet.Wpf.TaskbarNotification
         /// <param name="target">The target element on which to raise the command.</param>
         public static void ExecuteIfEnabled(this ICommand command, object commandParameter, IInputElement target)
         {
-            if (command == null) return;
+            if (command == null)
+            {
+                return;
+            }
 
-            RoutedCommand rc = command as RoutedCommand;
-            if (rc != null)
+            if (command is RoutedCommand rc)
             {
                 //routed commands work on a target
-                if (rc.CanExecute(commandParameter, target)) rc.Execute(commandParameter, target);
+                if (rc.CanExecute(commandParameter, target))
+                {
+                    rc.Execute(commandParameter, target);
+                }
             }
             else if (command.CanExecute(commandParameter))
             {
@@ -302,7 +304,10 @@ namespace Hardcodet.Wpf.TaskbarNotification
         /// is a null reference.</exception>
         public static bool IsDataContextDataBound(this FrameworkElement element)
         {
-            if (element == null) throw new ArgumentNullException("element");
+            if (element == null)
+            {
+                throw new ArgumentNullException(nameof(element));
+            }
             return element.GetBindingExpression(FrameworkElement.DataContextProperty) != null;
         }
     }
