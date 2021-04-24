@@ -5,7 +5,7 @@
 	  <UseWPF>true</UseWPF>
     <AppendTargetFrameworkToOutputPath>true</AppendTargetFrameworkToOutputPath>
     <IsSampleProject>$(MSBuildProjectName.Contains('Sample'))</IsSampleProject>
-    <Copyright>Copyright (c) 2009-2020 Philipp Sumi</Copyright>
+    <Copyright>Copyright (c) 2009-2021 Philipp Sumi</Copyright>
     <Company>hardcodet.net</Company>
     <Authors>Philipp Sumi</Authors>
     <PackageIcon>icon.png</PackageIcon>

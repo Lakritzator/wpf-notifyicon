@@ -14,7 +14,7 @@ namespace NotifyIconWpf.Sample.Windowless
         {
             base.OnStartup(e);
 
-            //create the notifyicon (it's a resource declared in NotifyIconResources.xaml
+            //create the notify icon (it's a resource declared in NotifyIconResources.xaml
             notifyIcon = (TaskbarIcon) FindResource("NotifyIcon");
         }
 
