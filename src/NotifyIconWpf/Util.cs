@@ -1,5 +1,5 @@
 ﻿// hardcodet.net NotifyIcon for WPF
-// Copyright (c) 2009 - 2020 Philipp Sumi
+// Copyright (c) 2009 - 2021 Philipp Sumi
 // Contact and Information: http://www.hardcodet.net
 //
 // This library is free software; you can redistribute it and/or
@@ -25,6 +25,7 @@
 using System;
 using System.ComponentModel;
 using System.Drawing;
+using System.IO;
 using System.Windows;
 using System.Windows.Input;
 using System.Windows.Media;
@@ -156,15 +157,33 @@ namespace Hardcodet.Wpf.TaskbarNotification
         /// <summary>
         /// Reads a given image resource into a WinForms icon.
         /// </summary>
-        /// <param name="imageSource">Image source pointing to
-        /// an icon file (*.ico).</param>
-        /// <returns>An icon object that can be used with the
-        /// taskbar area.</returns>
+        /// <param name="imageSource">Image source pointing to an icon file (*.ico).</param>
+        /// <returns>An icon object that can be used with the task-bar area.</returns>
         public static Icon ToIcon(this ImageSource imageSource)
         {
             if (imageSource == null) return null;
 
             var uri = new Uri(imageSource.ToString());
+
+            string filePath = null;
+            try
+            {
+                if (uri.IsFile)
+                {
+                    filePath = uri.AbsolutePath;
+                }
+            }
+            catch
+            {
+                filePath = uri.ToString();
+            }
+            // if the image source is a physical file then create the icon from it
+            if (!string.IsNullOrEmpty(filePath) && File.Exists(filePath))
+            {
+                using var fileStream = File.OpenRead(filePath);
+                return new Icon(fileStream);
+            }
+
             StreamResourceInfo streamInfo = Application.GetResourceStream(uri);
 
             if (streamInfo == null)
@@ -196,7 +215,7 @@ namespace Hardcodet.Wpf.TaskbarNotification
         /// </summary>
         /// <typeparam name="T"></typeparam>
         /// <param name="value">The evaluated value.</param>
-        /// <param name="candidates">A liste of possible values that are
+        /// <param name="candidates">A list of possible values that are
         /// regarded valid.</param>
         /// <returns>True if one of the submitted <paramref name="candidates"/>
         /// matches the evaluated value. If the <paramref name="candidates"/>
